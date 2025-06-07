@@ -8,8 +8,12 @@
 
 ## 2025-06-09
 
-- Plan: Learn React basics and start frontend setup.
-- Next: Add `/medications` API route.
+- Implemented CRUD API for `/medications` and `/reminders`.
+- Added input validation for required fields.
+- Added 404 and error handling middleware.
+- Confirmed all endpoints work with Postman.
+- Improved error messages and response consistency.
+- Updated README and API documentation.
 
 ---
 
@@ -17,3 +21,4 @@
 
 - Remember to use `return` after sending error responses in Express.
 - Commit and push changes after every major step.
+- Next: Add authentication, pagination, and start frontend integration.
