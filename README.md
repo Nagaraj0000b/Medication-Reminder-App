@@ -19,3 +19,9 @@ A web application to help users manage their medication schedules and receive ti
 
 ## Getting Started
 Instructions to set up the project locally will be added soon.
+
+
+
+## day 3
+created conection between my sql and the server
+
