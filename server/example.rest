@@ -1,0 +1,32 @@
+# Create a medication
+POST http://localhost:8000/medications
+Content-Type: application/json
+
+{
+  "name": "Paracetamol",
+  "dosage": "500mg",
+  "user_id": 1
+}
+
+###
+# Get all medications (with JWT token)
+GET http://localhost:8000/medications
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+###
+# Get medication by ID
+GET http://localhost:8000/medications/1
+
+###
+# Update medication by ID
+PUT http://localhost:8000/medications/1
+Content-Type: application/json
+
+{
+  "name": "Ibuprofen",
+  "dosage": "400mg"
+}
+
+###
+# Delete medication by ID
+DELETE http://localhost:8000/medications/1
