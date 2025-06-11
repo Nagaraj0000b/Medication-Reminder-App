@@ -19,7 +19,7 @@ function sanitizeInput(input) {
 }
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; 
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token required' });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
@@ -86,28 +86,28 @@ app.post('/login', (req, res) => {
       id: user.id, name: user.name, email: user.email
     }, JWT_SECRET, { expiresIn: '1h' })
     res.json({
-      message: "Login Sucessfull", userid: user.id, name: user.name,token:token
+      message: "Login Sucessfull", userid: user.id, name: user.name, token: token
     })
   })
 })
 app.get('/medications', authenticateToken, (req, res) => {
-  db.query('SELECT * FROM medications where user_id=?',[req.user.id], (err, result) => {
+  db.query('SELECT * FROM medications where user_id=?', [req.user.id], (err, result) => {
     if (err) return res.sendStatus(500);
     res.json(result);
   });
 });
-app.get('/medications/:id', (req, res) => {
+app.get('/medications/:id', authenticateToken, (req, res) => {
   const medicationId = req.params.id
-  db.query('SELECT * FROM medications where id =?', [medicationId], (err, result) => {
+  db.query('SELECT * FROM medications where id =? AND user_id=?', [medicationId, req.user.id], (err, result) => {
     if (err) return res.sendStatus(500);
     if (result.length === 0) return res.status(404).json({ error: 'Medication not found' });
     res.json(result[0]);
   });
 });
-app.post('/medications', (req, res) => {
+app.post('/medications', authenticateToken, (req, res) => {
   const name = sanitizeInput(req.body.name);
   const dosage = sanitizeInput(req.body.dosage);
-  const user_id = req.body.user_id;
+  const user_id = req.user.id;
   if (!name || !dosage || !user_id) {
     return res.status(400).json({ error: 'name, dosage, and user_id are required' });
   }
@@ -123,11 +123,11 @@ app.post('/medications', (req, res) => {
 })
   ;
 
-app.put('/medications/:id', (req, res) => {
+app.put('/medications/:id', authenticateToken, (req, res) => {
   const name = sanitizeInput(req.body.name);
   const dosage = sanitizeInput(req.body.dosage);
   db.query(
-    'update medications set name=?,dosage=? where id=?', [name, dosage, req.params.id], (err, result) => {
+    'update medications set name=?,dosage=? where id=? AND user_id=?', [name, dosage, req.params.id, req.user.id], (err, result) => {
 
       if (err) return res.status(500).json({ error: 'Database error', details: err.message });
       if (result.affectedRows === 0) return res.status(404).json({ error: 'Medication not found' });
@@ -136,8 +136,8 @@ app.put('/medications/:id', (req, res) => {
     }
   )
 })
-app.delete('/medications/:id', (req, res) => {
-  db.query('delete from medications where id=?', [req.params.id], (err, result) => {
+app.delete('/medications/:id', authenticateToken, (req, res) => {
+  db.query('delete from medications where id=? AND user_id=?', [req.params.id, req.user.id], (err, result) => {
 
     if (err) return res.status(500).json({ error: 'Database error', details: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Medication not found' });
@@ -145,25 +145,25 @@ app.delete('/medications/:id', (req, res) => {
     res.json({ id: req.params.id, sucess: true })
   })
 })
-app.get('/reminders', (req, res) => {
-  db.query('SELECT * from reminders', (err, result) => {
+app.get('/reminders', authenticateToken, (req, res) => {
+  db.query('SELECT * from reminders where user_id=?', [req.user.id], (err, result) => {
     if (err) return res.status(500).json({ error: 'Database error', details: err.message });
 
     res.json(result);
   })
 })
-app.get('/reminders/:id', (req, res) => {
+app.get('/reminders/:id', authenticateToken, (req, res) => {
   const medid = req.params.id
-  db.query('SELECT * from reminders where id=?', [medid], (err, result) => {
+  db.query('SELECT * from reminders where id=? AND user_id=?', [medid, req.user.id], (err, result) => {
     if (err) return res.status(500).json({ error: 'Database error', details: err.message });
     if (result.length === 0) return res.status(404).json({ error: 'Reminder not found' });
     res.json(result[0]);
   })
 })
-app.post('/reminders', (req, res) => {
+app.post('/reminders', authenticateToken, (req, res) => {
   const { medication_id, remind_at } = req.body
   db.query(
-    'insert into reminders(medication_id,remind_at)values(?,?)', [medication_id, remind_at], (err, result) => {
+    'insert into reminders(medication_id,remind_at,user_id)values(?,?,?)', [medication_id, remind_at, req.user.id], (err, result) => {
 
       if (err) return res.status(500).json({ error: 'Database error', details: err.message });
 
@@ -172,10 +172,10 @@ app.post('/reminders', (req, res) => {
     }
   )
 })
-app.put('/reminders/:id', (req, res) => {
+app.put('/reminders/:id', authenticateToken, (req, res) => {
   const { taken } = req.body
   db.query(
-    'update reminders set taken=? where id=?', [taken, req.params.id], (err, result) => {
+    'update reminders set taken=? where id=? AND user_id=?', [taken, req.params.id, req.user.id], (err, result) => {
 
       if (err) return res.status(500).json({ error: 'Database error', details: err.message });
       if (result.affectedRows === 0) return res.status(404).json({ error: 'Reminder not found' });
@@ -185,10 +185,10 @@ app.put('/reminders/:id', (req, res) => {
     }
   )
 })
-app.delete('/reminders/:id', (req, res) => {
+app.delete('/reminders/:id', authenticateToken, (req, res) => {
 
   db.query(
-    'delete from reminders where id=?', [req.params.id], (err, result) => {
+    'delete from reminders where id=? AND user_id=?', [req.params.id, req.user.id], (err, result) => {
 
       if (err) return res.status(500).json({ error: 'Database error', details: err.message });
       if (result.affectedRows === 0) return res.status(404).json({ error: 'Reminder not found' });

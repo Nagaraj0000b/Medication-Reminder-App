@@ -1,32 +1,73 @@
-# Create a medication
+### Register a new user
+POST http://localhost:8000/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+### Login an existing user
+POST http://localhost:8000/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+### get all medications for a user
+GET http://localhost:8000/medications
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
+
+### Get medication by ID (requires Bearer token)
+GET http://localhost:8000/medications/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
+
+### Add a new medication (requires Bearer token)
 POST http://localhost:8000/medications
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
 Content-Type: application/json
 
 {
   "name": "Paracetamol",
-  "dosage": "500mg",
-  "user_id": 1
+  "dosage": "500mg"
 }
 
-###
-# Get all medications (with JWT token)
-GET http://localhost:8000/medications
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
-
-###
-# Get medication by ID
-GET http://localhost:8000/medications/1
-
-###
-# Update medication by ID
-PUT http://localhost:8000/medications/1
+### Update a medication by ID (requires Bearer token)
+PUT http://localhost:8000/medications/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI 
 Content-Type: application/json
 
 {
   "name": "Ibuprofen",
   "dosage": "400mg"
 }
+### Delete a medication by ID (requires Bearer token)
+DELETE http://localhost:8000/medications/8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI 
+### get all reminders for a user
+GET http://localhost:8000/reminders
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
+### Get reminder by ID (requires Bearer token)
+GET http://localhost:8000/reminders/4̥
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
+### Add a new reminder (requires Bearer token)
+POST http://localhost:8000/reminders
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
+Content-Type: application/json
 
-###
-# Delete medication by ID
-DELETE http://localhost:8000/medications/1
+{
+  "medication_id": 9,
+  "remind_at": "2025-06-01 08:00:00"
+}
+### Update a reminder by ID (requires Bearer token)
+PUT http://localhost:8000/reminders/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ5NjU2MzgzLCJleHAiOjE3NDk2NTk5ODN9.sEXPF_HBSDkNKrNaJtRWvQEIOZwHivKGhdbzjh3GnuI
+Content-Type: application/json
+
+{
+  "taken": true
+}
+### Delete a reminder by ID (requires Bearer token)
+DELETE http://localhost:8000/reminders/1
+Authorization:Bearer YOUR_JWT_TOKEN_HERE 
