@@ -1,9 +1,25 @@
-
----
-
 # 💊 Medication-Reminder-App
 
 An application to help users manage and remember their medications.
+
+---
+
+## 🛠️ Tech Stack & Frameworks Used
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=for-the-badge" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white&style=for-the-badge" alt="Express.js"/>
+  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black&style=for-the-badge" alt="React"/>
+  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white&style=for-the-badge" alt="Vite"/>
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge" alt="Tailwind CSS"/>
+  <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=for-the-badge" alt="MySQL"/>
+  <img src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white&style=for-the-badge" alt="JWT"/>
+  <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white&style=for-the-badge" alt="npm"/>
+  <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white&style=for-the-badge" alt="ESLint"/>
+  <img src="https://img.shields.io/badge/Dotenv-8DD6F9?logo=dotenv&logoColor=black&style=for-the-badge" alt="Dotenv"/>
+</p>
+
+---
 
 ## 🗂️ Project Structure
 
@@ -81,8 +97,6 @@ Medication-Reminder-App/
 2. **Set up your MySQL database:**
     - Create a database (e.g., `medication_reminder`)
     - Run the SQL scripts in `/docs` or as provided in the README to create the required tables (`users`, `medications`, `reminders`).
-    Absolutely! Here’s a **ready-to-paste section** for your README.md explaining how to import the database using MySQL Workbench.  
-Add this under your **How to Run** section or wherever you list setup instructions.
 
 ---
 
@@ -121,7 +135,6 @@ You can also open `database.sql` in a SQL editor tab, select all, and click the 
 **Your database is now ready for use with the Medication-Reminder-App backend!**
 
 ---
-
 
 3. **Configure your database connection:**
     - Update `server/db.js` with your MySQL credentials.
@@ -222,6 +235,6 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENCE](../LICENCE) file for details.
+This project is licensed under the MIT License. See the [LICENCE](./LICENCE) file for details.
 
 ---
