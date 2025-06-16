@@ -5,7 +5,48 @@ const PORT = 8000;
 const db = require("./db");
 const bcrypt = require("bcrypt")
 const jwt = require('jsonwebtoken')
+const cors = require('cors');
+app.use(cors());
 const JWT_SECRET = process.env.JWT_SECRET
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'SendGrid',
+  auth: {
+    user: 'apikey', // this is literally the word 'apikey'
+    pass: process.env.SENDGRID_API_KEY
+  }
+});
+async function sendOtpEmail(email, otp) {
+  await transporter.sendMail({
+    from: process.env.SENDGRID_SENDER,
+    to: email,
+    subject: "Your Medication Reminder App OTP Code",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 420px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; padding: 24px; background: #f9fafb;">
+        <h2 style="color: #14b8a6; text-align: center;">Medication Reminder App</h2>
+        <p style="font-size: 17px; color: #222; text-align: center;">
+          <b>Your OTP code is:</b>
+        </p>
+        <p style="font-size: 32px; letter-spacing: 6px; color: #0f766e; text-align: center; font-weight: bold;">
+          ${otp}
+        </p>
+        <p style="font-size: 15px; color: #444; text-align: center;">
+          Enter this code in the app to verify your email.<br>
+          <b>This code will expire in 10 minutes.</b>
+        </p>
+        <hr style="margin: 24px 0;">
+        <p style="font-size: 13px; color: #888; text-align: center;">
+          Didn’t request this? Just ignore this email.
+        </p>
+      </div>
+    `
+  });
+}
+
+
+
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -37,59 +78,125 @@ app.get('/', (req, res) => {
 });
 app.post('/register', async (req, res) => {
   const name = sanitizeInput(req.body.name);
-  const email = sanitizeInput(req.body.email)
+  const email = sanitizeInput(req.body.email);
   const password = req.body.password;
   if (!name || !email || !password) {
-    return res.status(400).json({ error: 'name,email,and password requried  ' })
+    return res.status(400).json({ error: 'name, email, and password required' });
   }
-  db.query('select * from users where email=?', [email], async (err, result) => {
+  db.query('SELECT * FROM users WHERE email=?', [email], async (err, result) => {
     if (err) {
-      return res.status(500).json({ error: 'Database error', details: err.message })
-
+      return res.status(500).json({ error: 'Database error', details: err.message });
     }
     if (result.length > 0) {
-      return res.status(409).json({ error: 'User already exists' })
+      return res.status(409).json({ error: 'User already exists' });
     }
-    const hashedPassword = await bcrypt.hash(password, 10)
-    db.query('insert into users(name,email,password)values(?,?,?)', [name, email, hashedPassword], (err, result) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error', details: err.message })
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min from now
+
+    db.query(
+      'INSERT INTO users(name, email, password, isVerified, otp, otpExpires) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, false, otp, otpExpires],
+      async (err, result) => {
+        if (err) {
+          return res.status(500).json({ error: 'Database error', details: err.message });
+        }
+        await sendOtpEmail(email, otp); // Make sure sendOtpEmail is defined as shown earlier!
+        res.status(201).json({ message: 'OTP sent to your email. Please verify.' });
       }
-      res.status(201).json({ message: 'User registered successfully' })
-    })
-  })
-}
-)
+    );
+  });
+});
+
+app.post('/verify-otp', (req, res) => {
+  const { email, otp } = req.body;
+  db.query(
+    'SELECT * FROM users WHERE email = ? AND otp = ? AND otpExpires > NOW()',
+    [email, otp],
+    (err, results) => {
+      if (results.length === 0) {
+        return res.status(400).json({ error: "Invalid or expired OTP" });
+      }
+      db.query(
+        'UPDATE users SET isVerified = ?, otp = NULL, otpExpires = NULL WHERE email = ?',
+        [true, email],
+        (err, result) => {
+          if (err) return res.status(500).json({ error: "Database error", details: err.message });
+          res.json({ message: "Email verified successfully!" });
+        }
+      );
+    }
+  );
+});
+
 
 app.post('/login', (req, res) => {
-  // console.log('BODY:', req.body); 
-  const email = sanitizeInput(req.body.email)
-  const password = req.body.password
+  const email = sanitizeInput(req.body.email);
+  const password = req.body.password;
   if (!email || !password) {
-    return res.status(500).json({ error: "Email and PAssword requried" })
+    return res.status(400).json({ error: "Email and Password required" });
   }
-  db.query('select * from users where email =?', [email], async (err, result) => {
+  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, result) => {
     if (err) {
-      return res.status(500).json({ error: "Database Error", details: err.message })
+      return res.status(500).json({ error: "Database Error", details: err.message });
     }
     if (result.length === 0) {
-      return res.status(404).json({
-        error: "User not found"
-      })
+      return res.status(404).json({ error: "User not found" });
     }
-    const user = result[0]
-    const isMatch = await bcrypt.compare(password, user.password)
+    const user = result[0];
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" })
+      return res.status(401).json({ error: "Invalid credentials" });
     }
-    const token = jwt.sign({
-      id: user.id, name: user.name, email: user.email
-    }, JWT_SECRET, { expiresIn: '1h' })
-    res.json({
-      message: "Login Sucessfull", userid: user.id, name: user.name, token: token
-    })
-  })
-})
+    if (!user.isVerified) {
+      return res.status(403).json({ error: "Email not verified. Please verify OTP sent to your email." });
+    }
+
+    // Send OTP for login
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    db.query(
+      'UPDATE users SET otp = ?, otpExpires = ? WHERE email = ?',
+      [otp, otpExpires, email],
+      async (err, result2) => {
+        if (err) return res.status(500).json({ error: "Database error", details: err.message });
+        await sendOtpEmail(email, otp);
+        res.json({ message: "OTP sent to your email. Please verify." });
+      }
+    );
+  });
+});
+app.post('/verify-login-otp', (req, res) => {
+  const { email, otp } = req.body;
+  db.query(
+    'SELECT * FROM users WHERE email = ? AND otp = ? AND otpExpires > NOW()',
+    [email, otp],
+    (err, results) => {
+      if (results.length === 0) {
+        return res.status(400).json({ error: "Invalid or expired OTP" });
+      }
+      const user = results[0];
+      db.query(
+        'UPDATE users SET otp = NULL, otpExpires = NULL WHERE email = ?',
+        [email],
+        (err, result) => {
+          if (err) return res.status(500).json({ error: "Database error", details: err.message });
+          // Generate JWT token
+          const token = jwt.sign({
+            id: user.id, name: user.name, email: user.email
+          }, JWT_SECRET, { expiresIn: '1h' });
+          res.json({
+            message: "Login Successful",
+            userid: user.id,
+            name: user.name,
+            token: token
+          });
+        }
+      );
+    }
+  );
+});
+
 app.get('/medications', authenticateToken, (req, res) => {
   db.query('SELECT * FROM medications where user_id=?', [req.user.id], (err, result) => {
     if (err) return res.sendStatus(500);
