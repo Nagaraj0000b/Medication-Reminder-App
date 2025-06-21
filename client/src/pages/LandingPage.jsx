@@ -3,10 +3,7 @@ import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import FeaturesSection from "../components/FeaturesSection";
 import Footer from "../components/Footer";
-import About from "./About";
-import Contact from "./Contact";
-import Features from "./Features";
-import Home from "./Home";
+
 export default function LandingPage() {
   const navigate = useNavigate();
 

@@ -137,4 +137,6 @@ dist
 node_modules/
 server/node_modules/
 server/.env
+docs/clientfiles(.txt)
+docs/serverfiles(.txt)
 

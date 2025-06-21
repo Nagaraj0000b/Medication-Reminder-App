@@ -1,3 +1,7 @@
+
+
+---
+
 # 💊 Medication-Reminder-App
 
 An application to help users manage and remember their medications.
@@ -6,7 +10,9 @@ An application to help users manage and remember their medications.
 
 ## 🛠️ Tech Stack & Frameworks Used
 
-<p align="center">
+
+  
+  <p align="center">
   <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=for-the-badge" alt="Node.js"/>
   <img src="https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white&style=for-the-badge" alt="Express.js"/>
   <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black&style=for-the-badge" alt="React"/>
@@ -18,6 +24,15 @@ An application to help users manage and remember their medications.
   <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white&style=for-the-badge" alt="ESLint"/>
   <img src="https://img.shields.io/badge/Dotenv-8DD6F9?logo=dotenv&logoColor=black&style=for-the-badge" alt="Dotenv"/>
 </p>
+  
+  
+  
+  
+  
+  
+  
+  
+
 
 ---
 
@@ -26,65 +41,59 @@ An application to help users manage and remember their medications.
 ```
 Medication-Reminder-App/
 │
-├── client/                     # React frontend (coming soon)
+├── client/                         # React frontend (Vite + Tailwind CSS)
+│   ├── public/
+│   └── src/
+│       ├── assets/                 # Images, logos, static assets
+│       ├── components/             # Reusable React components (Navbar, Footer, etc.)
+│       ├── pages/                  # Page components (LandingPage, LoginPage, SignUpPage, Dashboard, etc.)
+│       ├── App.jsx                 # Main React component with routes
+│       ├── main.jsx                # React entry point
+│       └── index.css               # Tailwind/global styles
+│   ├── package.json
+│   └── tailwind.config.js
 │
-├── docs/                       # Documentation & progress
-│   ├── README.md
-│   ├── .gitkeep
-│   └── PROGRESS.md
-│
-├── server/                     # Node.js + Express backend
-│   ├── node_modules/
-│   ├── .env
-│   ├── .gitkeep
-│   ├── db.js
-│   ├── example.rest
-│   ├── index.js
+├── server/                         # Node.js + Express backend
+│   ├── db.js                       # Database connection setup
+│   ├── index.js                    # Main Express app
+│   ├── example.rest                # REST Client API examples
+│   ├── .env                        # Environment variables (DB credentials, JWT secret)
 │   └── package.json
 │
+├── docs/                           # Documentation & SQL scripts
+│   ├── README.md                   # Project and setup documentation
+│   ├── database.sql                # MySQL schema and sample data
+│   └── PROGRESS.md                 # Progress log and notes
+│
 ├── .gitignore
-└── LICENCE
+├── LICENSE
+└── README.md                       # Main project README
 ```
 
-## 🚀 Project Progress
 
-### ✅ Completed
-- Set up project structure (`client`, `server`, `docs`)
-- Initialized Git and connected to GitHub
-- Created Node.js + Express backend
-- Connected backend to MySQL database
-- Built and tested `/users`, `/medications`, and `/reminders` API endpoints
-- Implemented error handling and input validation
-- Added JWT authentication with 1-hour expiry and logout
-- Documented project and tracked progress
+---
 
-### 🔄 In Progress
-- Learn and set up React frontend
-- Integrate frontend with backend authentication
+## 🚀 Features Implemented (Up to Dashboard)
 
-### 📝 Next Steps
-- Add pagination and filtering to API endpoints
-- Start frontend development with React
-- Write unit tests for backend
-- Expand documentation in `docs/`
+### ✅ Authentication & User Flow
+- OTP-based signup and login (with email verification)
+- JWT authentication (1-hour expiry, secure logout)
+- Protected routes for dashboard and medication management
 
-## 🗒️ Progress Log
+### ✅ Landing & Info Pages
+- Responsive landing page with hero section, features, about, contact, and call-to-action
+- Modern navbar and footer, mobile-friendly navigation
 
-| Date       | What I Did                                               |
-|------------|----------------------------------------------------------|
-| 2025-06-08 | Fixed MySQL connection, SQL syntax, and API errors       |
-| 2025-06-08 | Documented project setup and major milestones            |
-| 2025-06-09 | Added CRUD for medications and reminders, improved error handling |
-| 2025-06-09 | Updated README and API documentation                     |
-| 2025-06-10 | Implemented JWT auth, logout, and REST Client testing    |
+### ✅ Dashboard (Client Main Page)
+- **Greeting (left) and live date/time (right)** — always aligned, even on mobile
+- **Search bar** for filtering medications and reminders
+- **Scrollable date row**: select previous, current, or upcoming days
+- **Medication list**: shows only medications with reminders for the selected day
+- **Edit/Delete** buttons beside each medication, “View All” beside the heading
+- **Add Medication** floating button
+- All components styled with Tailwind CSS for a clean, modern look
 
-## 📚 Learning Notes
-
-- Learned how to connect Node.js to MySQL using `mysql2`
-- Understood how to handle Express error responses
-- Practiced using Git for version control
-- Implemented RESTful API design and input validation
-- Integrated JWT authentication and token-based logout
+---
 
 ## 🏁 How to Run
 
@@ -96,65 +105,32 @@ Medication-Reminder-App/
 
 2. **Set up your MySQL database:**
     - Create a database (e.g., `medication_reminder`)
-    - Run the SQL scripts in `/docs` or as provided in the README to create the required tables (`users`, `medications`, `reminders`).
-
----
-
-## 🛠️ How to Import the Database in MySQL Workbench
-
-1. **Open MySQL Workbench** and connect to your MySQL server.
-
-2. **(Optional) Create the database:**
-    ```sql
-    CREATE DATABASE IF NOT EXISTS medication_reminder;
-    ```
-    - You can run this in a new SQL tab.
-
-3. **Go to the menu:**  
-   Click **Server > Data Import**.
-
-4. **Choose "Import from Self-Contained File":**
-    - Click the "..." button and select your `docs/database.sql` file.
-
-5. **Select the Target Schema:**  
-    - Choose `medication_reminder` as the target schema/database.
-    - If you don’t see it, create it as in step 2.
-
-6. **Click "Start Import"** at the bottom right.
-
-7. **Wait for the import to finish.**
-    - You’ll see a progress log.
-
-8. **Refresh the schema list** (click the refresh icon in the "Schemas" panel) to see your new tables.
-
-**Tip:**  
-You can also open `database.sql` in a SQL editor tab, select all, and click the "Execute" (lightning bolt) button to run the script directly.
-
----
-
-**Your database is now ready for use with the Medication-Reminder-App backend!**
-
----
+    - Run the SQL scripts in `/docs/database.sql` to create required tables (`users`, `medications`, `reminders`).
 
 3. **Configure your database connection:**
     - Update `server/db.js` with your MySQL credentials.
 
-4. **Install dependencies in the `server` folder:**
+4. **Install backend dependencies:**
     ```bash
     cd server
     npm install
-    ```
-
-5. **Start the backend server:**
-    ```bash
     npm start
     ```
     The server will run at [http://localhost:8000](http://localhost:8000)
 
-6. **Test the API:**
-    - Use Postman, VS Code REST Client, or curl to test endpoints like `/medications` and `/reminders`.
+5. **Install frontend dependencies:**
+    ```bash
+    cd ../client
+    npm install
+    npm run dev
+    ```
+    The frontend will run at [http://localhost:5173](http://localhost:5173) (or as shown in your terminal).
+
+---
 
 ## 📚 API Endpoints
+
+See the full API documentation in `/docs/README.md` or below for main endpoints.
 
 ### Medications
 
@@ -176,65 +152,27 @@ You can also open `database.sql` in a SQL editor tab, select all, and click the 
 | PUT    | `/reminders/:id`        | Update reminder (taken)       |
 | DELETE | `/reminders/:id`        | Delete reminder by ID         |
 
-### 📝 Example Requests
+---
 
-#### POST `/medications`
-```json
-{
-  "name": "Aspirin",
-  "dosage": "100mg",
-  "user_id": 1
-}
-```
+## 📝 Next Steps
 
-#### PUT `/medications/:id`
-```json
-{
-  "name": "Paracetamol",
-  "dosage": "500mg"
-}
-```
+- Add medication supply alerts and pill image integration
+- Enhance dashboard with adherence tracking, refill reminders, and analytics
+- Improve accessibility and mobile experience
+- Expand documentation and add more unit tests
 
-#### POST `/reminders`
-```json
-{
-  "medication_id": 1,
-  "remind_at": "2025-06-09 08:00:00"
-}
-```
-
-#### PUT `/reminders/:id`
-```json
-{
-  "taken": true
-}
-```
-
-## 🛡️ Error Handling
-
-- Returns `404` for invalid paths and not-found resources.
-- Returns `400` for missing required fields.
-- Returns `500` for server/database errors.
-
-## 📈 What Happened / Retrospective
-
-- **Faced issues with Express body parsing:**  
-  Fixed by ensuring correct middleware order and proper request formatting in REST Client.
-- **Learned about JWT authentication:**  
-  Implemented secure login, token expiry, and logout (with in-memory blacklist for demo).
-- **Debugged SQL and MySQL connection errors:**  
-  Improved error handling and database setup.
-- **Improved project documentation:**  
-  Added detailed README, progress tracking, and API docs for easier onboarding and collaboration.
-- **Next up:**  
-  Start frontend development, connect to backend, and polish user experience.
+---
 
 ## 👨‍💻 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
+---
+
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENCE](./LICENCE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
 ---
+
+**_This README is up-to-date with all work completed through the dashboard stage. For further progress, see `/docs/PROGRESS.md`._**

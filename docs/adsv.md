@@ -1,33 +1,58 @@
-
----
-
 # 💊 Medication-Reminder-App
 
 An application to help users manage and remember their medications.
+
+---
+
+## 🛠️ Tech Stack & Frameworks Used
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=for-the-badge" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white&style=for-the-badge" alt="Express.js"/>
+  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black&style=for-the-badge" alt="React"/>
+  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white&style=for-the-badge" alt="Vite"/>
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge" alt="Tailwind CSS"/>
+  <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=for-the-badge" alt="MySQL"/>
+  <img src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white&style=for-the-badge" alt="JWT"/>
+  <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white&style=for-the-badge" alt="npm"/>
+  <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white&style=for-the-badge" alt="ESLint"/>
+  <img src="https://img.shields.io/badge/Dotenv-8DD6F9?logo=dotenv&logoColor=black&style=for-the-badge" alt="Dotenv"/>
+</p>
+
+---
 
 ## 🗂️ Project Structure
 
 ```
 Medication-Reminder-App/
 │
-├── client/                     # React frontend (coming soon)
+├── client/                         # React frontend (Vite + Tailwind CSS)
+│   ├── public/
+│   └── src/
+│       ├── assets/                 # Images, logos, static assets
+│       ├── components/             # Reusable React components (Navbar, Footer, etc.)
+│       ├── pages/                  # Page components (LoginPage, SignUpPage, Dashboard, etc.)
+│       ├── App.jsx                 # Main React component with routes
+│       ├── main.jsx                # React entry point
+│       └── index.css               # Tailwind/global styles
+│   ├── package.json
+│   └── tailwind.config.js
 │
-├── docs/                       # Documentation & progress
-│   ├── README.md
-│   ├── .gitkeep
-│   └── PROGRESS.md
-│
-├── server/                     # Node.js + Express backend
-│   ├── node_modules/
-│   ├── .env
-│   ├── .gitkeep
-│   ├── db.js
-│   ├── example.rest
-│   ├── index.js
+├── server/                         # Node.js + Express backend
+│   ├── db.js                       # Database connection setup
+│   ├── index.js                    # Main Express app
+│   ├── example.rest                # REST Client API examples
+│   ├── .env                        # Environment variables (DB credentials, JWT secret)
 │   └── package.json
 │
+├── docs/                           # Documentation & SQL scripts
+│   ├── README.md                   # Project and setup documentation
+│   ├── database.sql                # MySQL schema and sample data
+│   └── PROGRESS.md                 # Progress log and notes
+│
 ├── .gitignore
-└── LICENCE
+├── LICENSE
+└── README.md                       # Main project README
 ```
 
 ## 🚀 Project Progress
@@ -81,6 +106,44 @@ Medication-Reminder-App/
 2. **Set up your MySQL database:**
     - Create a database (e.g., `medication_reminder`)
     - Run the SQL scripts in `/docs` or as provided in the README to create the required tables (`users`, `medications`, `reminders`).
+
+---
+
+## 🛠️ How to Import the Database in MySQL Workbench
+
+1. **Open MySQL Workbench** and connect to your MySQL server.
+
+2. **(Optional) Create the database:**
+    ```sql
+    CREATE DATABASE IF NOT EXISTS medication_reminder;
+    ```
+    - You can run this in a new SQL tab.
+
+3. **Go to the menu:**  
+   Click **Server > Data Import**.
+
+4. **Choose "Import from Self-Contained File":**
+    - Click the "..." button and select your `docs/database.sql` file.
+
+5. **Select the Target Schema:**  
+    - Choose `medication_reminder` as the target schema/database.
+    - If you don’t see it, create it as in step 2.
+
+6. **Click "Start Import"** at the bottom right.
+
+7. **Wait for the import to finish.**
+    - You’ll see a progress log.
+
+8. **Refresh the schema list** (click the refresh icon in the "Schemas" panel) to see your new tables.
+
+**Tip:**  
+You can also open `database.sql` in a SQL editor tab, select all, and click the "Execute" (lightning bolt) button to run the script directly.
+
+---
+
+**Your database is now ready for use with the Medication-Reminder-App backend!**
+
+---
 
 3. **Configure your database connection:**
     - Update `server/db.js` with your MySQL credentials.
@@ -181,6 +244,6 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENCE](../LICENCE) file for details.
+This project is licensed under the MIT License. See the [LICENCE](./LICENCE) file for details.
 
 ---
