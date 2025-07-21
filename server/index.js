@@ -3,20 +3,23 @@ const express = require('express');
 const app = express();
 const PORT = 8000;
 const db = require("./db");
-const bcrypt = require("bcrypt")
-const jwt = require('jsonwebtoken')
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 app.use(cors());
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET;
 const nodemailer = require('nodemailer');
+
+console.log('Environment loaded - JWT_SECRET exists:', !!process.env.JWT_SECRET);
 
 const transporter = nodemailer.createTransport({
   service: 'SendGrid',
   auth: {
-    user: 'apikey', // this is literally the word 'apikey'
+    user: 'apikey',
     pass: process.env.SENDGRID_API_KEY
   }
 });
+
 async function sendOtpEmail(email, otp) {
   await transporter.sendMail({
     from: process.env.SENDGRID_SENDER,
@@ -37,20 +40,15 @@ async function sendOtpEmail(email, otp) {
         </p>
         <hr style="margin: 24px 0;">
         <p style="font-size: 13px; color: #888; text-align: center;">
-          Didn’t request this? Just ignore this email.
+          Didn't request this? Just ignore this email.
         </p>
       </div>
     `
   });
 }
 
-
-
-
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 function sanitizeInput(input) {
   if (typeof input === 'string') {
@@ -58,6 +56,7 @@ function sanitizeInput(input) {
   }
   return input;
 }
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -70,19 +69,21 @@ function authenticateToken(req, res, next) {
   });
 }
 
+// Basic route
 app.get('/', (req, res) => {
-  db.query('SELECT * FROM users', (err, result) => {
-    if (err) return res.sendStatus(500);
-    res.json(result);
-  });
+  res.json({ message: 'Medication Reminder API is running' });
 });
+
+// Authentication routes (keep existing)
 app.post('/register', async (req, res) => {
   const name = sanitizeInput(req.body.name);
   const email = sanitizeInput(req.body.email);
   const password = req.body.password;
+  
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email, and password required' });
   }
+  
   db.query('SELECT * FROM users WHERE email=?', [email], async (err, result) => {
     if (err) {
       return res.status(500).json({ error: 'Database error', details: err.message });
@@ -90,9 +91,10 @@ app.post('/register', async (req, res) => {
     if (result.length > 0) {
       return res.status(409).json({ error: 'User already exists' });
     }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min from now
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     db.query(
       'INSERT INTO users(name, email, password, isVerified, otp, otpExpires) VALUES (?, ?, ?, ?, ?, ?)',
@@ -101,7 +103,7 @@ app.post('/register', async (req, res) => {
         if (err) {
           return res.status(500).json({ error: 'Database error', details: err.message });
         }
-        await sendOtpEmail(email, otp); // Make sure sendOtpEmail is defined as shown earlier!
+        await sendOtpEmail(email, otp);
         res.status(201).json({ message: 'OTP sent to your email. Please verify.' });
       }
     );
@@ -129,67 +131,117 @@ app.post('/verify-otp', (req, res) => {
   );
 });
 
-
-app.post('/login', (req, res) => {
+app.post("/login", (req, res) => {
   const email = sanitizeInput(req.body.email);
   const password = req.body.password;
+  
   if (!email || !password) {
     return res.status(400).json({ error: "Email and Password required" });
   }
-  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: "Database Error", details: err.message });
-    }
-    if (result.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
+  
+  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, result) => {
+    if (err) return res.status(500).json({ error: "Database Error", details: err.message });
+    if (result.length === 0) return res.status(404).json({ error: "User not found" });
+    
     const user = result[0];
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-    if (!user.isVerified) {
-      return res.status(403).json({ error: "Email not verified. Please verify OTP sent to your email." });
-    }
+    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+    if (!user.isVerified) return res.status(403).json({ error: "Email not verified. Please verify OTP sent to your email." });
 
-    // Send OTP for login
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-    db.query(
-      'UPDATE users SET otp = ?, otpExpires = ? WHERE email = ?',
-      [otp, otpExpires, email],
-      async (err, result2) => {
-        if (err) return res.status(500).json({ error: "Database error", details: err.message });
-        await sendOtpEmail(email, otp);
-        res.json({ message: "OTP sent to your email. Please verify." });
-      }
+    const token = jwt.sign(
+      { id: user.id, name: user.name, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
     );
+    res.json({ message: "Login Successful", userid: user.id, name: user.name, token });
   });
 });
-app.post('/verify-login-otp', (req, res) => {
-  const { email, otp } = req.body;
+
+// Medications endpoints (keep existing)
+app.get('/medications', authenticateToken, (req, res) => {
+  db.query('SELECT * FROM medications WHERE user_id=?', [req.user.id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
+    res.json(result);
+  });
+});
+
+app.get('/medications/:id', authenticateToken, (req, res) => {
+  const medicationId = req.params.id;
+  db.query('SELECT * FROM medications WHERE id = ? AND user_id = ?', [medicationId, req.user.id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
+    if (result.length === 0) return res.status(404).json({ error: 'Medication not found' });
+    res.json(result[0]);
+  });
+});
+
+app.post('/medications', authenticateToken, (req, res) => {
+  const name = sanitizeInput(req.body.name);
+  const dosage = sanitizeInput(req.body.dosage);
+  const sideEffects = sanitizeInput(req.body.sideEffects) || null;
+  const user_id = req.user.id;
+  
+  if (!name || !dosage) {
+    return res.status(400).json({ error: 'name and dosage are required' });
+  }
+
   db.query(
-    'SELECT * FROM users WHERE email = ? AND otp = ? AND otpExpires > NOW()',
-    [email, otp],
-    (err, results) => {
-      if (results.length === 0) {
-        return res.status(400).json({ error: "Invalid or expired OTP" });
+    'INSERT INTO medications (name, dosage, sideEffects, user_id) VALUES (?, ?, ?, ?)',
+    [name, dosage, sideEffects, user_id],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: 'Database error', details: err.message });
+      res.json({ id: result.insertId, name, dosage, sideEffects, user_id });
+    }
+  );
+});
+
+app.put('/medications/:id', authenticateToken, (req, res) => {
+  const name = sanitizeInput(req.body.name);
+  const dosage = sanitizeInput(req.body.dosage);
+  const sideEffects = sanitizeInput(req.body.sideEffects) || null;
+  
+  db.query(
+    'UPDATE medications SET name=?, dosage=?, sideEffects=? WHERE id=? AND user_id=?', 
+    [name, dosage, sideEffects, req.params.id, req.user.id], 
+    (err, result) => {
+      if (err) return res.status(500).json({ error: 'Database error', details: err.message });
+      if (result.affectedRows === 0) return res.status(404).json({ error: 'Medication not found' });
+      res.json({ id: req.params.id, name, dosage, sideEffects });
+    }
+  );
+});
+
+app.delete('/medications/:id', authenticateToken, (req, res) => {
+  const medicationId = req.params.id;
+  const userId = req.user.id;
+  
+  console.log(`Deleting medication ${medicationId} for user ${userId}`);
+  
+  db.query(
+    'DELETE FROM reminders WHERE medication_id = ? AND user_id = ?',
+    [medicationId, userId],
+    (err, reminderResult) => {
+      if (err) {
+        console.error('Error deleting reminders:', err);
+        return res.status(500).json({ error: 'Failed to delete reminders' });
       }
-      const user = results[0];
+      
       db.query(
-        'UPDATE users SET otp = NULL, otpExpires = NULL WHERE email = ?',
-        [email],
-        (err, result) => {
-          if (err) return res.status(500).json({ error: "Database error", details: err.message });
-          // Generate JWT token
-          const token = jwt.sign({
-            id: user.id, name: user.name, email: user.email
-          }, JWT_SECRET, { expiresIn: '1h' });
-          res.json({
-            message: "Login Successful",
-            userid: user.id,
-            name: user.name,
-            token: token
+        'DELETE FROM medications WHERE id = ? AND user_id = ?',
+        [medicationId, userId],
+        (err, medicationResult) => {
+          if (err) {
+            console.error('Error deleting medication:', err);
+            return res.status(500).json({ error: 'Failed to delete medication' });
+          }
+          
+          if (medicationResult.affectedRows === 0) {
+            return res.status(404).json({ error: 'Medication not found' });
+          }
+          
+          res.json({ 
+            message: 'Medication deleted successfully',
+            deletedReminders: reminderResult.affectedRows,
+            deletedMedications: medicationResult.affectedRows
           });
         }
       );
@@ -197,113 +249,260 @@ app.post('/verify-login-otp', (req, res) => {
   );
 });
 
-app.get('/medications', authenticateToken, (req, res) => {
-  db.query('SELECT * FROM medications where user_id=?', [req.user.id], (err, result) => {
-    if (err) return res.sendStatus(500);
+// FIXED: Enhanced medications-with-reminders endpoint
+app.get('/medications-with-reminders', authenticateToken, (req, res) => {
+  const { date } = req.query;
+  
+  console.log(`=== REMINDER DEBUG ===`);
+  console.log(`Requested date: ${date}`);
+  console.log(`User ID: ${req.user.id}`);
+  
+  // First, get all medications for the user
+  const medicationsQuery = `
+    SELECT id, name, dosage, sideEffects 
+    FROM medications 
+    WHERE user_id = ?
+    ORDER BY name
+  `;
+  
+  db.query(medicationsQuery, [req.user.id], (err, medications) => {
+    if (err) {
+      console.error('Error fetching medications:', err);
+      return res.status(500).json({ error: 'Failed to fetch medications' });
+    }
+    
+    console.log(`Found ${medications.length} medications`);
+    
+    if (medications.length === 0) {
+      return res.json([]);
+    }
+    
+    // Now get reminders for the specific date
+    let remindersQuery = `
+      SELECT r.*, m.name as medication_name
+      FROM reminders r
+      JOIN medications m ON r.medication_id = m.id
+      WHERE r.user_id = ? AND m.user_id = ?
+    `;
+    
+    let params = [req.user.id, req.user.id];
+    
+    if (date) {
+      // Try multiple date comparison methods to catch different formats
+      remindersQuery += ` AND (
+        DATE(r.remind_at) = ? OR 
+        r.remind_at LIKE ? OR 
+        SUBSTRING(r.remind_at, 1, 10) = ?
+      )`;
+      params.push(date, `${date}%`, date);
+    }
+    
+    remindersQuery += ` ORDER BY r.remind_at`;
+    
+    console.log('Reminders query:', remindersQuery);
+    console.log('Reminders params:', params);
+    
+    db.query(remindersQuery, params, (err, reminders) => {
+      if (err) {
+        console.error('Error fetching reminders:', err);
+        return res.status(500).json({ error: 'Failed to fetch reminders' });
+      }
+      
+      console.log(`Found ${reminders.length} reminders:`, reminders);
+      
+      // Combine medications with their reminders
+      const result = medications.map(med => {
+        const medReminders = reminders.filter(r => r.medication_id === med.id);
+        return {
+          id: med.id,
+          name: med.name,
+          dosage: med.dosage,
+          sideEffects: med.sideEffects || '',
+          reminders: medReminders
+        };
+      });
+      
+      console.log('Final result:', JSON.stringify(result, null, 2));
+      console.log(`=== END DEBUG ===`);
+      
+      res.json(result);
+    });
+  });
+});
+
+// Reminders endpoints (keep existing)
+app.get('/reminders', authenticateToken, (req, res) => {
+  const query = `
+    SELECT r.*, m.name as medication_name 
+    FROM reminders r
+    LEFT JOIN medications m ON r.medication_id = m.id
+    WHERE r.user_id = ?
+    ORDER BY r.remind_at ASC
+  `;
+  
+  db.query(query, [req.user.id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
     res.json(result);
   });
 });
-app.get('/medications/:id', authenticateToken, (req, res) => {
-  const medicationId = req.params.id
-  db.query('SELECT * FROM medications where id =? AND user_id=?', [medicationId, req.user.id], (err, result) => {
-    if (err) return res.sendStatus(500);
-    if (result.length === 0) return res.status(404).json({ error: 'Medication not found' });
-    res.json(result[0]);
-  });
-});
-app.post('/medications', authenticateToken, (req, res) => {
-  const name = sanitizeInput(req.body.name);
-  const dosage = sanitizeInput(req.body.dosage);
-  const user_id = req.user.id;
-  if (!name || !dosage || !user_id) {
-    return res.status(400).json({ error: 'name, dosage, and user_id are required' });
+
+app.post('/reminders', authenticateToken, (req, res) => {
+  const { 
+    medication_id, 
+    remind_at, 
+    frequency_type = 'daily', 
+    meal_timing = 'none', 
+    taken = false 
+  } = req.body;
+  
+  if (!medication_id || !remind_at) {
+    return res.status(400).json({ error: 'medication_id and remind_at are required' });
   }
 
+  const query = `
+    INSERT INTO reminders 
+    (medication_id, user_id, remind_at, frequency_type, meal_timing, taken) 
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
   db.query(
-    'INSERT INTO medications (name, dosage, user_id) VALUES (?, ?, ?)',
-    [name, dosage, user_id],
+    query,
+    [medication_id, req.user.id, remind_at, frequency_type, meal_timing, taken],
     (err, result) => {
-      if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-      res.json({ id: result.insertId, name, dosage, user_id });
+      if (err) {
+        console.error('Error creating reminder:', err);
+        return res.status(500).json({ error: 'Failed to create reminder' });
+      }
+      
+      res.json({ 
+        message: 'Reminder created successfully', 
+        id: result.insertId,
+        medication_id,
+        remind_at,
+        frequency_type,
+        meal_timing,
+        taken
+      });
     }
   );
-})
-  ;
+});
 
-app.put('/medications/:id', authenticateToken, (req, res) => {
-  const name = sanitizeInput(req.body.name);
-  const dosage = sanitizeInput(req.body.dosage);
-  db.query(
-    'update medications set name=?,dosage=? where id=? AND user_id=?', [name, dosage, req.params.id, req.user.id], (err, result) => {
-
-      if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-      if (result.affectedRows === 0) return res.status(404).json({ error: 'Medication not found' });
-
-      res.json({ id: req.params.id, name, dosage })
-    }
-  )
-})
-app.delete('/medications/:id', authenticateToken, (req, res) => {
-  db.query('delete from medications where id=? AND user_id=?', [req.params.id, req.user.id], (err, result) => {
-
-    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-    if (result.affectedRows === 0) return res.status(404).json({ error: 'Medication not found' });
-
-    res.json({ id: req.params.id, sucess: true })
-  })
-})
-app.get('/reminders', authenticateToken, (req, res) => {
-  db.query('SELECT * from reminders where user_id=?', [req.user.id], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-
-    res.json(result);
-  })
-})
-app.get('/reminders/:id', authenticateToken, (req, res) => {
-  const medid = req.params.id
-  db.query('SELECT * from reminders where id=? AND user_id=?', [medid, req.user.id], (err, result) => {
-    if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-    if (result.length === 0) return res.status(404).json({ error: 'Reminder not found' });
-    res.json(result[0]);
-  })
-})
-app.post('/reminders', authenticateToken, (req, res) => {
-  const { medication_id, remind_at } = req.body
-  db.query(
-    'insert into reminders(medication_id,remind_at,user_id)values(?,?,?)', [medication_id, remind_at, req.user.id], (err, result) => {
-
-      if (err) return res.status(500).json({ error: 'Database error', details: err.message });
-
-
-      res.json({ id: result.insertId, medication_id, remind_at })
-    }
-  )
-})
 app.put('/reminders/:id', authenticateToken, (req, res) => {
-  const { taken } = req.body
+  const { taken } = req.body;
   db.query(
-    'update reminders set taken=? where id=? AND user_id=?', [taken, req.params.id, req.user.id], (err, result) => {
-
+    'UPDATE reminders SET taken=? WHERE id=? AND user_id=?', 
+    [taken, req.params.id, req.user.id], 
+    (err, result) => {
       if (err) return res.status(500).json({ error: 'Database error', details: err.message });
       if (result.affectedRows === 0) return res.status(404).json({ error: 'Reminder not found' });
-
-      res.json({ id: req.params.id, status: true })
-
+      res.json({ id: req.params.id, taken });
     }
-  )
-})
+  );
+});
+
 app.delete('/reminders/:id', authenticateToken, (req, res) => {
-
   db.query(
-    'delete from reminders where id=? AND user_id=?', [req.params.id, req.user.id], (err, result) => {
-
+    'DELETE FROM reminders WHERE id=? AND user_id=?', 
+    [req.params.id, req.user.id], 
+    (err, result) => {
       if (err) return res.status(500).json({ error: 'Database error', details: err.message });
       if (result.affectedRows === 0) return res.status(404).json({ error: 'Reminder not found' });
-
-      res.json({ id: req.params.id, status: true })
+      res.json({ message: 'Reminder deleted successfully', id: req.params.id });
     }
-  )
-})
+  );
+});
+
+// Additional endpoints (keep existing bulk operations)
+app.get('/medications/:id/reminders', authenticateToken, (req, res) => {
+  const medicationId = req.params.id;
+  
+  const query = `
+    SELECT 
+      r.*,
+      m.name as medication_name,
+      m.dosage
+    FROM reminders r
+    JOIN medications m ON r.medication_id = m.id
+    WHERE r.medication_id = ? AND r.user_id = ? AND m.user_id = ?
+    ORDER BY r.remind_at ASC
+  `;
+  
+  db.query(query, [medicationId, req.user.id, req.user.id], (err, result) => {
+    if (err) {
+      console.error('Error fetching medication reminders:', err);
+      return res.status(500).json({ error: 'Failed to fetch reminders', details: err.message });
+    }
+    
+    res.json(result);
+  });
+});
+
+app.delete('/medications/:id/reminders/clear', authenticateToken, (req, res) => {
+  const medicationId = req.params.id;
+  const userId = req.user.id;
+  
+  const verifyQuery = 'SELECT id FROM medications WHERE id = ? AND user_id = ?';
+  
+  db.query(verifyQuery, [medicationId, userId], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Medication not found' });
+    }
+    
+    const deleteQuery = 'DELETE FROM reminders WHERE medication_id = ? AND user_id = ?';
+    
+    db.query(deleteQuery, [medicationId, userId], (err, deleteResult) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to clear reminders' });
+      }
+      
+      res.json({ 
+        message: 'All reminders cleared successfully',
+        cleared_count: deleteResult.affectedRows 
+      });
+    });
+  });
+});
+
+app.post('/medications/:id/reminders/bulk', authenticateToken, (req, res) => {
+  const medicationId = req.params.id;
+  const { reminders } = req.body;
+  
+  if (!Array.isArray(reminders) || reminders.length === 0) {
+    return res.status(400).json({ error: 'Reminders array is required' });
+  }
+  
+  const values = reminders.map(reminder => [
+    medicationId,
+    req.user.id,
+    reminder.remind_at,
+    reminder.frequency_type || 'daily',
+    reminder.meal_timing || 'none',
+    reminder.taken || false
+  ]);
+  
+  const query = `
+    INSERT INTO reminders 
+    (medication_id, user_id, remind_at, frequency_type, meal_timing, taken) 
+    VALUES ?
+  `;
+  
+  db.query(query, [values], (err, result) => {
+    if (err) {
+      console.error('Error creating bulk reminders:', err);
+      return res.status(500).json({ error: 'Failed to create reminders' });
+    }
+    
+    res.json({ 
+      message: `Successfully created ${result.affectedRows} reminders`,
+      created_count: result.affectedRows
+    });
+  });
+});
+
 app.use((req, res, next) => {
   res.status(404).json({ error: 'Not Found', path: req.originalUrl });
 });
@@ -312,6 +511,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal Server Error' });
 });
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
