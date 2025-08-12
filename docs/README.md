@@ -1,178 +1,190 @@
+# 💊 Medication Reminder App
 
+A full‑stack application to help users schedule, view, and manage their medications and time‑based reminders with an authenticated dashboard experience.
 
----
-
-# 💊 Medication-Reminder-App
-
-An application to help users manage and remember their medications.
+> This README consolidates and streamlines the information that was previously split between the existing root / client / docs READMEs and removes placeholders.
 
 ---
 
-## 🛠️ Tech Stack & Frameworks Used
+## 📌 Key Features (Current)
 
-
-  
-  <p align="center">
-  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=for-the-badge" alt="Node.js"/>
-  <img src="https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white&style=for-the-badge" alt="Express.js"/>
-  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black&style=for-the-badge" alt="React"/>
-  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white&style=for-the-badge" alt="Vite"/>
-  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white&style=for-the-badge" alt="Tailwind CSS"/>
-  <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white&style=for-the-badge" alt="MySQL"/>
-  <img src="https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white&style=for-the-badge" alt="JWT"/>
-  <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=white&style=for-the-badge" alt="npm"/>
-  <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white&style=for-the-badge" alt="ESLint"/>
-  <img src="https://img.shields.io/badge/Dotenv-8DD6F9?logo=dotenv&logoColor=black&style=for-the-badge" alt="Dotenv"/>
-</p>
-  
-  
-  
-  
-  
-  
-  
-  
-
+- User authentication (OTP-based signup & login + JWT session handling; 1‑hour token expiry)
+- Protected routes (only authenticated users access dashboard & medication/reminder data)
+- Responsive landing & informational pages (features, about, contact)
+- Dashboard with:
+  - Dynamic greeting & real‑time clock
+  - Date selector (past, present, upcoming days)
+  - Medication list filtered to the selected date
+  - Search bar for quick filtering
+  - Create / Edit / Delete medication entries
+  - Floating action button to add new medication
+- RESTful API for medications and reminders (CRUD)
+- MySQL schema & sample data (docs/database.sql)
+- Tailwind CSS styling and modular React components
 
 ---
 
-## 🗂️ Project Structure
+## 🛠 Tech Stack
+
+| Layer      | Technologies |
+|------------|--------------|
+| Frontend   | React (Vite), Tailwind CSS |
+| Backend    | Node.js, Express.js |
+| Auth       | OTP (email flow), JWT |
+| Database   | MySQL |
+| Tooling    | npm, dotenv, ESLint |
+| Docs       | SQL schema + progress notes (docs/) |
+
+---
+
+## 🗂 Project Structure
 
 ```
 Medication-Reminder-App/
-│
-├── client/                         # React frontend (Vite + Tailwind CSS)
+├── client/                     # React frontend
 │   ├── public/
 │   └── src/
-│       ├── assets/                 # Images, logos, static assets
-│       ├── components/             # Reusable React components (Navbar, Footer, etc.)
-│       ├── pages/                  # Page components (LandingPage, LoginPage, SignUpPage, Dashboard, etc.)
-│       ├── App.jsx                 # Main React component with routes
-│       ├── main.jsx                # React entry point
-│       └── index.css               # Tailwind/global styles
+│       ├── assets/             # Static assets
+│       ├── components/         # Reusable UI components
+│       ├── pages/              # Page-level components (Landing, Login, Signup, Dashboard, etc.)
+│       ├── App.jsx             # App routing / layout
+│       ├── main.jsx            # Frontend entry point
+│       └── index.css           # Tailwind/global styles
 │   ├── package.json
 │   └── tailwind.config.js
 │
-├── server/                         # Node.js + Express backend
-│   ├── db.js                       # Database connection setup
-│   ├── index.js                    # Main Express app
-│   ├── example.rest                # REST Client API examples
-│   ├── .env                        # Environment variables (DB credentials, JWT secret)
+├── server/                     # Express backend
+│   ├── index.js                # App bootstrap & route wiring
+│   ├── db.js                   # MySQL connection
+│   ├── example.rest            # REST client sample requests
 │   └── package.json
 │
-├── docs/                           # Documentation & SQL scripts
-│   ├── README.md                   # Project and setup documentation
-│   ├── database.sql                # MySQL schema and sample data
-│   └── PROGRESS.md                 # Progress log and notes
+├── docs/
+│   ├── README.md               # Extended documentation
+│   ├── database.sql            # Schema & seed data
+│   └── PROGRESS.md             # Development notes
 │
-├── .gitignore
 ├── LICENSE
-└── README.md                       # Main project README
+└── README.md                   # (This file)
 ```
 
+---
+
+## ⚙️ Prerequisites
+
+- Node.js ≥ 16
+- npm
+- MySQL running locally (or accessible remotely)
+- (Optional) REST client extension (VS Code REST Client / Postman) for manually exercising endpoints
 
 ---
 
-## 🚀 Features Implemented (Up to Dashboard)
+## 🚀 Setup & Installation
 
-### ✅ Authentication & User Flow
-- OTP-based signup and login (with email verification)
-- JWT authentication (1-hour expiry, secure logout)
-- Protected routes for dashboard and medication management
+### 1. Clone
 
-### ✅ Landing & Info Pages
-- Responsive landing page with hero section, features, about, contact, and call-to-action
-- Modern navbar and footer, mobile-friendly navigation
+```bash
+git clone https://github.com/Nagaraj0000b/Medication-Reminder-App.git
+cd Medication-Reminder-App
+```
 
-### ✅ Dashboard (Client Main Page)
-- **Greeting (left) and live date/time (right)** — always aligned, even on mobile
-- **Search bar** for filtering medications and reminders
-- **Scrollable date row**: select previous, current, or upcoming days
-- **Medication list**: shows only medications with reminders for the selected day
-- **Edit/Delete** buttons beside each medication, “View All” beside the heading
-- **Add Medication** floating button
-- All components styled with Tailwind CSS for a clean, modern look
+### 2. Database
 
----
+1. Create a database (example: `medication_reminder`)
+2. Run the SQL script:
 
-## 🏁 How to Run
+```bash
+mysql -u <user> -p medication_reminder < docs/database.sql
+```
 
-1. **Clone the repo and navigate to the project folder:**
-    ```bash
-    git clone https://github.com/Nagaraj0000b/Medication-Reminder-App.git
-    cd Medication-Reminder-App
-    ```
+### 3. Backend
 
-2. **Set up your MySQL database:**
-    - Create a database (e.g., `medication_reminder`)
-    - Run the SQL scripts in `/docs/database.sql` to create required tables (`users`, `medications`, `reminders`).
+```bash
+cd server
+cp .env.example .env   # if you supply an example file; otherwise create .env
+# In .env define:
+# DB_HOST=localhost
+# DB_USER=your_user
+# DB_PASSWORD=your_password
+# DB_NAME=medication_reminder
+# JWT_SECRET=your_jwt_secret
+# OTP_SENDER=...
+npm install
+npm start
+```
 
-3. **Configure your database connection:**
-    - Update `server/db.js` with your MySQL credentials.
+Backend default URL: http://localhost:8000
 
-4. **Install backend dependencies:**
-    ```bash
-    cd server
-    npm install
-    npm start
-    ```
-    The server will run at [http://localhost:8000](http://localhost:8000)
+### 4. Frontend
 
-5. **Install frontend dependencies:**
-    ```bash
-    cd ../client
-    npm install
-    npm run dev
-    ```
-    The frontend will run at [http://localhost:5173](http://localhost:5173) (or as shown in your terminal).
+In a second terminal:
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Frontend default URL: http://localhost:5173 (Vite output may show an alternate port if occupied)
 
 ---
 
-## 📚 API Endpoints
+## 🔐 Authentication Flow (Summary)
 
-See the full API documentation in `/docs/README.md` or below for main endpoints.
-
-### Medications
-
-| Method | Endpoint                | Description                   |
-|--------|-------------------------|-------------------------------|
-| GET    | `/medications`          | Get all medications (JWT required) |
-| GET    | `/medications/:id`      | Get medication by ID          |
-| POST   | `/medications`          | Create new medication         |
-| PUT    | `/medications/:id`      | Update medication by ID       |
-| DELETE | `/medications/:id`      | Delete medication by ID       |
-
-### Reminders
-
-| Method | Endpoint                | Description                   |
-|--------|-------------------------|-------------------------------|
-| GET    | `/reminders`            | Get all reminders             |
-| GET    | `/reminders/:id`        | Get reminder by ID            |
-| POST   | `/reminders`            | Create new reminder           |
-| PUT    | `/reminders/:id`        | Update reminder (taken)       |
-| DELETE | `/reminders/:id`        | Delete reminder by ID         |
+1. User initiates signup → OTP sent via configured channel (email).
+2. User verifies OTP → account created → JWT issued (1‑hour validity).
+3. Authenticated requests include `Authorization: Bearer <token>`.
+4. Token expiry triggers re-authentication.
 
 ---
 
-## 📝 Next Steps
+## 📡 Core API Endpoints
 
-- Add medication supply alerts and pill image integration
-- Enhance dashboard with adherence tracking, refill reminders, and analytics
-- Improve accessibility and mobile experience
-- Expand documentation and add more unit tests
+Base URL: `http://localhost:8000`
+
+| Group        | Method | Endpoint              | Description                              | Auth |
+|--------------|--------|-----------------------|------------------------------------------|------|
+| Medications  | GET    | /medications          | List all user medications                | JWT  |
+| Medications  | GET    | /medications/:id      | Get medication by ID                     | JWT  |
+| Medications  | POST   | /medications          | Create medication                        | JWT  |
+| Medications  | PUT    | /medications/:id      | Update medication                        | JWT  |
+| Medications  | DELETE | /medications/:id      | Delete medication                        | JWT  |
+| Reminders    | GET    | /reminders            | List reminders                           | JWT  |
+| Reminders    | GET    | /reminders/:id        | Get reminder by ID                       | JWT  |
+| Reminders    | POST   | /reminders            | Create reminder                          | JWT  |
+| Reminders    | PUT    | /reminders/:id        | Update (e.g., mark taken)                | JWT  |
+| Reminders    | DELETE | /reminders/:id        | Delete reminder                          | JWT  |
+
+(Refer to `server/example.rest` for sample request bodies.)
 
 ---
 
-## 👨‍💻 Contributing
+## 🧱 Architecture Notes
 
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+- Separation of concerns: frontend (React) handles presentation; backend (Express) handles business logic & persistence.
+- Stateless auth via JWT; protected routes enforce token verification.
+- MySQL chosen for structured relational data (users, medications, reminders).
+- Modular React organization: pages (routing-level), components (reusable UI primitives).
+- Tailwind CSS for utility-first styling enabling rapid iteration.
+
+
+
+## 📄 License
+
+MIT License (see LICENSE file).
 
 ---
 
-## 📜 License
+## 🤝 Contribution
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+1. Fork & create feature branch
+2. Commit changes with clear messages
+3. Open a pull request referencing any related issue
 
 ---
 
-**_This README is up-to-date with all work completed through the dashboard stage. For further progress, see `/docs/PROGRESS.md`._**
+## 🙋 Support / Questions
+
+Open an issue in the repository with a clear description.
+
+---
