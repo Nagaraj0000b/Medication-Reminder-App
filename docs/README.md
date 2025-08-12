@@ -1,190 +1,174 @@
 # 💊 Medication Reminder App
 
-A full‑stack application to help users schedule, view, and manage their medications and time‑based reminders with an authenticated dashboard experience.
-
-> This README consolidates and streamlines the information that was previously split between the existing root / client / docs READMEs and removes placeholders.
+> Never miss a dose. A full‑stack application to schedule, manage, and review medications and time‑based reminders with authenticated user workflows.
 
 ---
 
-## 📌 Key Features (Current)
-
-- User authentication (OTP-based signup & login + JWT session handling; 1‑hour token expiry)
-- Protected routes (only authenticated users access dashboard & medication/reminder data)
-- Responsive landing & informational pages (features, about, contact)
-- Dashboard with:
-  - Dynamic greeting & real‑time clock
-  - Date selector (past, present, upcoming days)
-  - Medication list filtered to the selected date
-  - Search bar for quick filtering
-  - Create / Edit / Delete medication entries
-  - Floating action button to add new medication
-- RESTful API for medications and reminders (CRUD)
-- MySQL schema & sample data (docs/database.sql)
-- Tailwind CSS styling and modular React components
+## ✨ Overview
+Medication Reminder App helps users create and manage medications and their reminders, offering authenticated access, a dashboard with date-based filtering, and a clean responsive UI. Current implementation covers authentication, landing pages, and a functional dashboard (up to reminder & medication management).
 
 ---
 
 ## 🛠 Tech Stack
 
 | Layer      | Technologies |
-|------------|--------------|
+|----------- |-------------|
 | Frontend   | React (Vite), Tailwind CSS |
 | Backend    | Node.js, Express.js |
-| Auth       | OTP (email flow), JWT |
+| Auth       | OTP (email flow), JWT (1‑hour expiry) |
 | Database   | MySQL |
-| Tooling    | npm, dotenv, ESLint |
-| Docs       | SQL schema + progress notes (docs/) |
+| Tooling    | npm, dotenv, ESLint, REST client examples |
 
 ---
 
-## 🗂 Project Structure
-
+## 📂 Project Structure
 ```
 Medication-Reminder-App/
-├── client/                     # React frontend
+├── client/                     # React frontend (Vite + Tailwind)
 │   ├── public/
 │   └── src/
-│       ├── assets/             # Static assets
-│       ├── components/         # Reusable UI components
-│       ├── pages/              # Page-level components (Landing, Login, Signup, Dashboard, etc.)
-│       ├── App.jsx             # App routing / layout
-│       ├── main.jsx            # Frontend entry point
-│       └── index.css           # Tailwind/global styles
+│       ├── assets/
+│       ├── components/         # Reusable UI (Navbar, Footer, etc.)
+│       ├── pages/              # Landing, Login, Signup, Dashboard
+│       ├── App.jsx
+│       ├── main.jsx
+│       └── index.css
 │   ├── package.json
 │   └── tailwind.config.js
 │
 ├── server/                     # Express backend
-│   ├── index.js                # App bootstrap & route wiring
 │   ├── db.js                   # MySQL connection
-│   ├── example.rest            # REST client sample requests
+│   ├── index.js                # App bootstrap & routing
+│   ├── example.rest            # Sample API calls
 │   └── package.json
 │
 ├── docs/
-│   ├── README.md               # Extended documentation
-│   ├── database.sql            # Schema & seed data
-│   └── PROGRESS.md             # Development notes
+│   ├── database.sql            # Schema + sample data
+│   ├── PROGRESS.md             # Development log
+│   └── README.md               # Extended documentation (legacy)
 │
 ├── LICENSE
-└── README.md                   # (This file)
+└── README.md                   # (This consolidated file)
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## ✅ Implemented Features
 
-- Node.js ≥ 16
-- npm
-- MySQL running locally (or accessible remotely)
-- (Optional) REST client extension (VS Code REST Client / Postman) for manually exercising endpoints
+### Authentication & User Flow
+- OTP-based signup and login (email verification)
+- JWT authentication (1‑hour expiry, logout invalidation concept)
+- Protected dashboard & data routes
+
+### Landing & Informational Pages
+- Responsive hero, features, about, contact, call‑to‑action
+- Mobile-friendly navigation (Tailwind utility classes)
+
+### Dashboard
+- Live greeting + real‑time date/time display
+- Scrollable selectable date row (past / present / upcoming)
+- Medication list filtered by selected date
+- Search bar for fast filtering
+- Add / Edit / Delete medication entries
+- Floating action (Add Medication) button
+- Consistent responsive layout
 
 ---
 
-## 🚀 Setup & Installation
+## 🧾 Database (MySQL)
+Key tables (see `docs/database.sql`):
+- users
+- medications
+- reminders
+
+Add migrations or versioning as the schema evolves.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js ≥ 16
+- npm
+- MySQL running locally (or accessible remotely)
 
 ### 1. Clone
-
 ```bash
 git clone https://github.com/Nagaraj0000b/Medication-Reminder-App.git
 cd Medication-Reminder-App
 ```
 
-### 2. Database
-
-1. Create a database (example: `medication_reminder`)
-2. Run the SQL script:
-
+### 2. Database Setup
 ```bash
+mysql -u <user> -p -e "CREATE DATABASE medication_reminder;"
 mysql -u <user> -p medication_reminder < docs/database.sql
 ```
 
-### 3. Backend
-
+### 3. Backend Setup
 ```bash
 cd server
-cp .env.example .env   # if you supply an example file; otherwise create .env
-# In .env define:
+npm install
+# Create .env with:
 # DB_HOST=localhost
 # DB_USER=your_user
 # DB_PASSWORD=your_password
 # DB_NAME=medication_reminder
 # JWT_SECRET=your_jwt_secret
-# OTP_SENDER=...
-npm install
+# (Add any mail/OTP config variables used)
 npm start
 ```
+Backend default: http://localhost:8000
 
-Backend default URL: http://localhost:8000
-
-### 4. Frontend
-
-In a second terminal:
-
+### 4. Frontend Setup
 ```bash
-cd client
+cd ../client
 npm install
 npm run dev
 ```
-
-Frontend default URL: http://localhost:5173 (Vite output may show an alternate port if occupied)
-
----
-
-## 🔐 Authentication Flow (Summary)
-
-1. User initiates signup → OTP sent via configured channel (email).
-2. User verifies OTP → account created → JWT issued (1‑hour validity).
-3. Authenticated requests include `Authorization: Bearer <token>`.
-4. Token expiry triggers re-authentication.
+Frontend default: http://localhost:5173
 
 ---
 
-## 📡 Core API Endpoints
+## 🔐 Authentication Flow
+1. User requests signup → OTP sent (email).
+2. OTP verified → account created → JWT issued.
+3. Client stores token (e.g., localStorage) → attaches as `Authorization: Bearer <token>`.
+4. Expiry leads to re‑authentication.
 
-Base URL: `http://localhost:8000`
+---
 
-| Group        | Method | Endpoint              | Description                              | Auth |
-|--------------|--------|-----------------------|------------------------------------------|------|
-| Medications  | GET    | /medications          | List all user medications                | JWT  |
-| Medications  | GET    | /medications/:id      | Get medication by ID                     | JWT  |
-| Medications  | POST   | /medications          | Create medication                        | JWT  |
-| Medications  | PUT    | /medications/:id      | Update medication                        | JWT  |
-| Medications  | DELETE | /medications/:id      | Delete medication                        | JWT  |
-| Reminders    | GET    | /reminders            | List reminders                           | JWT  |
-| Reminders    | GET    | /reminders/:id        | Get reminder by ID                       | JWT  |
-| Reminders    | POST   | /reminders            | Create reminder                          | JWT  |
-| Reminders    | PUT    | /reminders/:id        | Update (e.g., mark taken)                | JWT  |
-| Reminders    | DELETE | /reminders/:id        | Delete reminder                          | JWT  |
+## 📡 Core API Endpoints (Summary)
 
-(Refer to `server/example.rest` for sample request bodies.)
+| Method | Endpoint              | Purpose                       | Auth |
+|--------|-----------------------|-------------------------------|------|
+| GET    | /medications          | List user medications         | JWT  |
+| GET    | /medications/:id      | Retrieve medication           | JWT  |
+| POST   | /medications          | Create medication             | JWT  |
+| PUT    | /medications/:id      | Update medication             | JWT  |
+| DELETE | /medications/:id      | Delete medication             | JWT  |
+| GET    | /reminders            | List reminders                | JWT  |
+| GET    | /reminders/:id        | Retrieve reminder             | JWT  |
+| POST   | /reminders            | Create reminder               | JWT  |
+| PUT    | /reminders/:id        | Update (e.g., mark taken)     | JWT  |
+| DELETE | /reminders/:id        | Delete reminder               | JWT  |
+
+Check `server/example.rest` for sample request bodies.
 
 ---
 
 ## 🧱 Architecture Notes
-
-- Separation of concerns: frontend (React) handles presentation; backend (Express) handles business logic & persistence.
-- Stateless auth via JWT; protected routes enforce token verification.
-- MySQL chosen for structured relational data (users, medications, reminders).
-- Modular React organization: pages (routing-level), components (reusable UI primitives).
-- Tailwind CSS for utility-first styling enabling rapid iteration.
-
-
-
-## 📄 License
-
-MIT License (see LICENSE file).
+- Separation of concerns: React UI vs Express API
+- Stateless JWT auth guards protected routes
+- Tailwind utility design for rapid iteration
+- Potential extension: adherence analytics, notification dispatch, supply alerts
 
 ---
 
-## 🤝 Contribution
+## 🛣 Roadmap (Planned Enhancements)
+- Adherence tracking & compliance metrics
+- Refill / low supply alerts
+- Enhanced accessibility & mobile refinements
+- Additional unit / integration tests
+- Analytics or calendar view
+- Notification provider integration (e.g., FCM / email scheduling)
 
-1. Fork & create feature branch
-2. Commit changes with clear messages
-3. Open a pull request referencing any related issue
-
----
-
-## 🙋 Support / Questions
-
-Open an issue in the repository with a clear description.
-
----
