@@ -1,0 +1,62 @@
+# render.yaml - Blueprint for deploying to Render.com
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API service
+  - type: web
+    name: medication-reminder-api
+    env: node
+    region: ohio  # Choose a region close to your users
+    plan: free  # Free tier
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: JWT_SECRET
+        sync: false  # Requires manual input in Render dashboard
+      - key: DB_HOST
+        sync: false  # Requires manual input in Render dashboard
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+    autoDeploy: true  # Auto-deploy on Git push
+
+  # Frontend static site
+  - type: web
+    name: medication-reminder-app
+    env: static
+    region: ohio  # Choose a region close to your users
+    plan: free  # Free tier
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://medication-reminder-api.onrender.com  # Update this to match your API service URL
+    autoDeploy: true  # Auto-deploy on Git push
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+
+# Notes:
+# 1. Set up your GitHub repository in Render first
+# 2. Update the service names and regions as needed
+# 3. Set up environment variables in the Render dashboard
+# 4. Make sure the VITE_API_URL matches your API service URL
+# 5. Free tier services will sleep after 15 minutes of inactivity
