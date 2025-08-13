@@ -140,3 +140,7 @@ server/.env
 docs/clientfiles(.txt)
 docs/serverfiles(.txt)
 
+# Railway sensitive files
+server/.env.railway
+RAILWAY_CONNECTION.md
+server/railway-connection-test.js
