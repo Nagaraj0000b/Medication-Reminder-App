@@ -1,0 +1,31 @@
+.dashboard-bg {
+  background-color: #f9fafb;
+}
+
+/* You can add more custom styles for your dashboard here */
+.reminder-card {
+  transition: transform 0.2s;
+}
+
+.reminder-card:hover {
+  transform: translateY(-2px);
+}
+
+.medication-highlight {
+  border-left: 4px solid #0d9488;
+}
+
+.urgent-reminder {
+  border-left: 4px solid #e11d48;
+}
+
+/* Add pulse animation for upcoming reminders */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(13, 148, 136, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+}
+
+.reminder-upcoming {
+  animation: pulse 2s infinite;
+}
