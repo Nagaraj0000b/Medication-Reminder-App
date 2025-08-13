@@ -1,0 +1,13 @@
+# Build and Run Settings for Render.com
+
+# Set the Node.js version
+NODE_VERSION=18.x
+
+# Define how to build the app
+BUILD_COMMAND=npm install && npm run build
+
+# Define how to start the app
+START_COMMAND=node index.js
+
+# Define health check path
+HEALTH_CHECK_PATH=/

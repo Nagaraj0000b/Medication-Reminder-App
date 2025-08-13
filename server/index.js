@@ -1,12 +1,31 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 const db = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-app.use(cors());
+
+// Configure CORS with allowed origins
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['http://localhost:5173', 'http://localhost:3000']; // Default local dev origins
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
+
 const JWT_SECRET = process.env.JWT_SECRET;
 const nodemailer = require('nodemailer');
 
@@ -93,8 +112,9 @@ app.post('/register', async (req, res) => {
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Set OTP expiry to 1 week
+  const otpExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     db.query(
       'INSERT INTO users(name, email, password, isVerified, otp, otpExpires) VALUES (?, ?, ?, ?, ?, ?)',
@@ -146,14 +166,18 @@ app.post("/login", (req, res) => {
     const user = result[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
-    if (!user.isVerified) return res.status(403).json({ error: "Email not verified. Please verify OTP sent to your email." });
+  // Remove OTP check from login. Allow login only if user exists and password matches.
 
     const token = jwt.sign(
       { id: user.id, name: user.name, email: user.email },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ message: "Login Successful", userid: user.id, name: user.name, token });
+    res.json({
+      message: "Login Successful",
+      user: { id: user.id, name: user.name, email: user.email },
+      token
+    });
   });
 });
 
